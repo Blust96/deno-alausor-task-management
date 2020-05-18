@@ -1,0 +1,7 @@
+scripts:
+    start:
+        cmd: ./src/app.ts
+        tsconfig: tsconfig.json
+        allow:
+            - net
+            - read
