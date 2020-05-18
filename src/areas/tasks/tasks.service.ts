@@ -14,12 +14,13 @@ export class TasksService {
 
     getTaskById(id: string): Task {
         const task = this.tasks.find(task => task.id === id)
-        if (!task) throw new NotFoundError(`Task with id ${id} not found.`);
+        if (!task) { 
+            throw new NotFoundError(`Task with id ${id} not found.`);
+        }
         return task;
     }
 
     createTask(createTaskDto: CreateTaskDto): Task {
-
         const { title, description } = createTaskDto;
         
         const task = {
@@ -31,13 +32,32 @@ export class TasksService {
 
         this.tasks.push(task);
         return task;
-
     }
 
     deleteTask(id: string): void {
         const tasksLength: number = this.tasks.length;
         this.tasks = this.tasks.filter(task => task.id !== id);
-        if (tasksLength === this.tasks.length) throw new NotFoundError(`Task with id ${id} not found.`);
+        if (tasksLength === this.tasks.length) { 
+            throw new NotFoundError(`Task with id ${id} not found.`) 
+        }
+    }
+
+    updateTaskStatus(id: string, status: TaskStatus): Task {
+        let findTask;
+        
+        this.tasks = this.tasks.map(task => {
+            if(task.id === id) {
+                task.status = status;
+                findTask = task;
+            }
+            return task;
+        });
+
+        if (!findTask) { 
+            throw new NotFoundError(`Task with id ${id} not found.`)
+        }
+
+        return findTask;
     }
 
 }

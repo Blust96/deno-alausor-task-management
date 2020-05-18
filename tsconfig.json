@@ -1,8 +1,8 @@
 {
     "compilerOptions": {
         "baseUrl": ".",
-        "allowJs": true,
-        "checkJs": true,
+        "allowJs": false, // weird behaviour
+        "checkJs": false,
         "esModuleInterop": true,
         "experimentalDecorators": true,
         "emitDecoratorMetadata": true,

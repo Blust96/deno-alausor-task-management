@@ -5,3 +5,4 @@ scripts:
         allow:
             - net
             - read
+    reload: deno run --reload --config tsconfig.json --allow-net --allow-read ./src/app.ts
