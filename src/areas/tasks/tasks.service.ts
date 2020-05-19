@@ -8,8 +8,28 @@ export class TasksService {
 
     private tasks: Task[] = [];
     
-    getAllTasks(): Task[] {
-        return this.tasks;
+    getAllTasks(search: string, status: string): Task[] {
+        let filteredTask = this.tasks;
+
+        if (search || status) {
+
+            filteredTask = filteredTask.filter(task => {
+                let returnTask = true;
+
+                if(search && !( task.title.includes(search) || task.description.includes(search) )) { 
+                    returnTask = false;
+                }
+
+                if(status && task.status !== status) {
+                    returnTask = false;
+                }
+                
+                return returnTask ? task : null;
+            });
+
+        }
+
+        return filteredTask;
     }
 
     getTaskById(id: string): Task {

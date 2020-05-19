@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Delete, Patch, Body, Param, BadRequestError } from 'https://deno.land/x/alosaur/src/mod.ts';
+import { Controller, Get, Post, Delete, Patch, Body, Param, QueryParam, BadRequestError } from 'https://deno.land/x/alosaur/src/mod.ts';
 import validator from 'https://dev.jspm.io/class-validator@0.8.5';
 
 import { TasksService } from './tasks.service.ts';
@@ -13,8 +13,12 @@ export class TasksController {
     constructor(private tasksService: TasksService) {}
 
     @Get()
-    getAllTasks(): Task[] {
-        return this.tasksService.getAllTasks();
+    getAllTasks(
+        @QueryParam('search') search: string,
+        @QueryParam('status') status: string
+    ): Task[] {
+        getTasksValidation(search, status);
+        return this.tasksService.getAllTasks(search, status.toUpperCase());
     }
 
     @Get('/:id')
@@ -38,23 +42,44 @@ export class TasksController {
         this.tasksService.deleteTask(id);
     }
 
-    //TODO: Move status type/value checking in body parser
     @Patch('/:id')
     async updateTaskStatus(
         @Param('id') id: string,
         @Body() body: any
     ): Promise<Task> {
         const { status } = body;
-
-        if (!status) {
-            throw new BadRequestError(`Invalid parameters: status is empty.`);
-        }
-
-        if (!(status.toUpperCase() in TaskStatus)) {
-            throw new BadRequestError(`Invalid parameters: status should be ${Object.values(TaskStatus).map(status => `'${status}'`)}.`);
-        }
-
-        return this.tasksService.updateTaskStatus(id, status);
+        statusValidation(status);
+        return this.tasksService.updateTaskStatus(id, status.toUpperCase());
     }
 
+}
+
+//TODO: Move validation checking in body or query pipe validation 🔥
+
+function statusValidation(status: string): void {
+    if (!status) {
+        throw new BadRequestError(`Status should not be empty.`);
+    }
+
+    if (!(status.toUpperCase() in TaskStatus)) {
+        throw new BadRequestError(`Status must be one of the following values ${Object.values(TaskStatus).map(status => `'${status}'`)}.`);
+    }
+}
+
+function getTasksValidation(search: string, status: string): void {
+    let errors: string[] = [];
+
+    if (search && search === '') {
+        errors.push(' search should not be empty');
+    }
+
+    if (status && status === '') {
+        errors.push(' status should not be empty');
+    } else if (status && !(status.toUpperCase() in TaskStatus)) {
+        errors.push(` status must be one of the following: ${Object.values(TaskStatus).map(status => `'${status}'`)}.`);
+    }
+
+    if (errors.length > 0) {
+        throw new BadRequestError(`Invalid parameters:${errors.map(error => `${error}`)}`);
+    }
 }
